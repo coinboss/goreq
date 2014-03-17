@@ -25,6 +25,8 @@ type Request struct {
 	Accept      string
 	Host        string
 	UserAgent   string
+	Username    string
+	Password    string
 }
 
 type Response struct {
@@ -73,7 +75,7 @@ func (b *Body) ToString() (string, error) {
 	return string(body), nil
 }
 
-func concat(a, b []string) []string { 
+func concat(a, b []string) []string {
 	return append(a, b...)
 }
 
@@ -148,7 +150,7 @@ func (r Request) Do() (*Response, error) {
 	}
 
 	if strings.EqualFold(r.Method, "GET") || strings.EqualFold(r.Method, "") {
-		if r.QueryString != nil {	
+		if r.QueryString != nil {
 			param, e := paramParse(r.QueryString)
 			if e != nil {
 				return nil, &Error{Err: e}
@@ -163,6 +165,10 @@ func (r Request) Do() (*Response, error) {
 	if er != nil {
 		// we couldn't parse the URL.
 		return nil, &Error{Err: er}
+	}
+
+	if r.Username != "" && r.Password != "" {
+		req.SetBasicAuth(r.Username, r.Password)
 	}
 
 	// add headers to the request
